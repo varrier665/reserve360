@@ -23,9 +23,9 @@ const Contact = () => (
             <h3 className="font-display text-2xl font-bold text-foreground mb-6">Get in Touch</h3>
             <div className="space-y-6">
               {[
-                { icon: Mail, label: "Email", lines: ["info@annadaan.org", "donations@annadaan.org", "volunteer@annadaan.org"] },
-                { icon: Phone, label: "Phone", lines: ["+91 98765 43210", "+91 11 2345 6789"] },
-                { icon: MapPin, label: "Address", lines: ["123 Seva Marg, Connaught Place", "New Delhi, India 110001"] },
+                { icon: Mail, label: "Email", lines: ["info@reserve360.org", "donations@reserve360.org", "volunteer@reserve360.org"] },
+                { icon: Phone, label: "Phone", lines: ["+91 9xxxx xxxx0", "+91 11 2xx5 6xx9"] },
+                { icon: MapPin, label: "Address", lines: ["123 Chennai", "Tamil Nadu, India 110001"] },
               ].map((contact) => (
                 <div key={contact.label} className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
