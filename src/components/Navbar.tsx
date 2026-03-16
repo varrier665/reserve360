@@ -22,7 +22,7 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
           <Heart className="h-7 w-7 text-primary fill-primary" />
-          <span className="font-display text-xl font-bold text-foreground">AnnaDaan</span>
+          <span className="font-display text-xl font-bold text-foreground">Reserve360</span>
         </Link>
 
         {/* Desktop */}
