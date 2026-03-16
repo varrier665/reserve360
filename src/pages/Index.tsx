@@ -13,7 +13,7 @@ const Index = () => (
     <HeroSection />
     <HowItWorks />
     <DonationCategories />
-    <ImpactStats />
+    
     <Testimonials />
     <CTASection />
     <Footer />
