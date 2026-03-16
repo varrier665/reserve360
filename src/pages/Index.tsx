@@ -14,7 +14,7 @@ const Index = () => (
     <HowItWorks />
     <DonationCategories />
     
-    <Testimonials />
+    
     <CTASection />
     <Footer />
   </div>
