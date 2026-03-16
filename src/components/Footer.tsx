@@ -51,7 +51,7 @@ const Footer = () => (
           <h4 className="font-display text-lg font-semibold text-background mb-4">Contact</h4>
           <div className="space-y-3 text-sm text-background/60">
             <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> info@reserve360.org</div>
-            <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> +91 98765 43210</div>
+            <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> +91 9xxxx xxxx0</div>
             <div className="flex items-start gap-2"><MapPin className="h-4 w-4 text-primary mt-0.5" /> 123 Chennai, Tamil Nadu, India 110001</div>
           </div>
         </div>
