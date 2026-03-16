@@ -4,10 +4,9 @@ import { motion } from "framer-motion";
 import { Target, Eye, Shield, Users } from "lucide-react";
 
 const team = [
-  { name: "Arun Mehta", role: "Founder & CEO", desc: "20+ years in social impact and humanitarian work across India." },
-  { name: "Dr. Kavita Singh", role: "Head of Operations", desc: "Former WHO consultant specializing in healthcare logistics." },
-  { name: "Rohan Patel", role: "Technology Lead", desc: "Building the tech platform connecting donors to communities." },
-  { name: "Meera Joshi", role: "Partnerships Director", desc: "Forging relationships with 1,200+ NGOs across 28 states." },
+  { name: "Thorani S"},
+  { name: "Thoshika P"},
+  { name: "Tisha Samritha S"},
 ];
 
 const About = () => (
@@ -16,9 +15,9 @@ const About = () => (
     <div className="pt-24 pb-20">
       <div className="container mx-auto px-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">About AnnaDaan</h1>
+          <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">About Reserve360</h1>
           <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-            Bridging the gap between surplus and need since 2018.
+            Bridging the gap between surplus and need.
           </p>
         </motion.div>
 
