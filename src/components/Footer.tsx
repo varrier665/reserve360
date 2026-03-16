@@ -22,7 +22,7 @@ const Footer = () => (
               { label: "Donate Food", path: "/donate" },
               { label: "Donate Medicine", path: "/donate" },
               { label: "Volunteer", path: "/get-involved" },
-              { label: "Our Impact", path: "/impact" },
+              
             ].map((l) => (
               <Link key={l.label} to={l.path} className="block text-sm text-background/60 hover:text-primary transition-colors">
                 {l.label}
