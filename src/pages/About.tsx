@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { Target, Eye, Shield, Users } from "lucide-react";
 
 const team = [
-  { name: "Thorani S"},
-  { name: "Thoshika P"},
+  { name: "Thorani S", role: "Founder", desc: "Leading the mission to nourish and heal India." },
+  { name: "Thoshika P", role: "Co-Founder", desc: "Driving partnerships and community outreach." },
   { name: "Tisha Samritha S"},
 ];
 
