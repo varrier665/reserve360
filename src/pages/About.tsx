@@ -6,7 +6,7 @@ import { Target, Eye, Shield, Users } from "lucide-react";
 const team = [
   { name: "Thorani S", role: "Founder", desc: "Leading the mission to nourish and heal India." },
   { name: "Thoshika P", role: "Co-Founder", desc: "Driving partnerships and community outreach." },
-  { name: "Tisha Samritha S"},
+  { name: "Tisha Samritha S", role: "Operations Lead", desc: "Managing logistics and volunteer coordination." },
 ];
 
 const About = () => (
