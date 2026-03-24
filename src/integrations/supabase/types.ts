@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      donations: {
+        Row: {
+          amount: number | null
+          company_name: string | null
+          contact_person: string | null
+          created_at: string
+          delivery_method: string | null
+          donation_type: string
+          donor_name: string
+          email: string
+          expiry_date: string | null
+          id: string
+          items_description: string | null
+          medicine_type: string | null
+          notes: string | null
+          payment_status: string
+          phone: string | null
+          quantity: string | null
+          upi_transaction_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          company_name?: string | null
+          contact_person?: string | null
+          created_at?: string
+          delivery_method?: string | null
+          donation_type: string
+          donor_name: string
+          email: string
+          expiry_date?: string | null
+          id?: string
+          items_description?: string | null
+          medicine_type?: string | null
+          notes?: string | null
+          payment_status?: string
+          phone?: string | null
+          quantity?: string | null
+          upi_transaction_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          company_name?: string | null
+          contact_person?: string | null
+          created_at?: string
+          delivery_method?: string | null
+          donation_type?: string
+          donor_name?: string
+          email?: string
+          expiry_date?: string | null
+          id?: string
+          items_description?: string | null
+          medicine_type?: string | null
+          notes?: string | null
+          payment_status?: string
+          phone?: string | null
+          quantity?: string | null
+          upi_transaction_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
