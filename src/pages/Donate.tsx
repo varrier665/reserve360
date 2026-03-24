@@ -235,11 +235,7 @@ const Donate = () => {
                   </select>
                   <Input placeholder="Donation Amount (₹)" type="number" value={form.amount} onChange={set("amount")} />
                   <Textarea placeholder="Tell us about your CSR goals and how we can collaborate" rows={4} value={form.notes} onChange={set("notes")} />
-                  <Button variant="warm" className="w-full" onClick={() => {
-                    if (!form.companyName) { setForm(f => ({ ...f, name: form.companyName || form.contactPerson })); }
-                    setForm(f => ({ ...f, name: f.companyName || f.contactPerson || f.name }));
-                    submitDonation();
-                  }} disabled={submitting}>
+                  <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>
                     {submitting ? "Submitting…" : "Proceed to Pay"}
                   </Button>
                 </div>
