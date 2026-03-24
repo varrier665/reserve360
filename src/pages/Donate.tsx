@@ -56,7 +56,7 @@ const Donate = () => {
 
     setSubmitting(true);
     const { data, error } = await supabase.from("donations").insert({
-      donor_name: form.name,
+      donor_name: form.name || form.companyName || form.contactPerson,
       email: form.email,
       phone: form.phone || null,
       donation_type: tab,
