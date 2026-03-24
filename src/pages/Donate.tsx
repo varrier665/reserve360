@@ -8,9 +8,96 @@ import { Apple, Pill, Building2 } from "lucide-react";
 import { useState } from "react";
 import donateFood from "@/assets/donate-food.jpg";
 import donateMedicine from "@/assets/donate-medicine.jpg";
+import UPIPayment from "@/components/UPIPayment";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+interface DonationForm {
+  name: string;
+  email: string;
+  phone: string;
+  items: string;
+  quantity: string;
+  method: string;
+  notes: string;
+  expiryDate: string;
+  medicineType: string;
+  companyName: string;
+  contactPerson: string;
+  amount: string;
+}
+
+const emptyForm: DonationForm = {
+  name: "", email: "", phone: "", items: "", quantity: "",
+  method: "", notes: "", expiryDate: "", medicineType: "",
+  companyName: "", contactPerson: "", amount: "",
+};
 
 const Donate = () => {
   const [tab, setTab] = useState<"food" | "medicine" | "corporate">("food");
+  const [form, setForm] = useState<DonationForm>(emptyForm);
+  const [showPayment, setShowPayment] = useState(false);
+  const [currentDonationId, setCurrentDonationId] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const set = (key: keyof DonationForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const submitDonation = async () => {
+    if (!form.name || !form.email) {
+      toast({ title: "Please fill in your name and email", variant: "destructive" });
+      return;
+    }
+    const amount = parseFloat(form.amount);
+    if (!amount || amount <= 0) {
+      toast({ title: "Please enter a valid donation amount", variant: "destructive" });
+      return;
+    }
+
+    setSubmitting(true);
+    const { data, error } = await supabase.from("donations").insert({
+      donor_name: form.name,
+      email: form.email,
+      phone: form.phone || null,
+      donation_type: tab,
+      items_description: form.items || null,
+      quantity: form.quantity || null,
+      delivery_method: form.method || null,
+      expiry_date: form.expiryDate || null,
+      medicine_type: form.medicineType || null,
+      company_name: form.companyName || null,
+      contact_person: form.contactPerson || null,
+      notes: form.notes || null,
+      amount,
+      payment_status: "pending",
+    } as any).select().single();
+
+    setSubmitting(false);
+
+    if (error) {
+      toast({ title: "Error submitting donation", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    setCurrentDonationId((data as any).id);
+    setShowPayment(true);
+  };
+
+  const handlePaymentConfirmed = async (transactionId: string) => {
+    await supabase.from("donations").update({
+      upi_transaction_id: transactionId,
+      payment_status: "completed",
+    } as any).eq("id", currentDonationId);
+
+    toast({ title: "Donation recorded!", description: "We'll verify your payment shortly." });
+  };
+
+  const closePayment = () => {
+    setShowPayment(false);
+    setForm(emptyForm);
+  };
+
+  const amount = parseFloat(form.amount) || 0;
 
   return (
     <div className="min-h-screen">
@@ -33,7 +120,7 @@ const Donate = () => {
             ].map((t) => (
               <button
                 key={t.key}
-                onClick={() => setTab(t.key)}
+                onClick={() => { setTab(t.key); setForm(emptyForm); }}
                 className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all ${
                   tab === t.key ? "bg-primary text-primary-foreground shadow-warm" : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
@@ -65,19 +152,22 @@ const Donate = () => {
                 <div className="bg-card rounded-2xl p-6 shadow-card">
                   <h3 className="font-display text-xl font-bold text-foreground mb-4">Food Donation Form</h3>
                   <div className="space-y-4">
-                    <Input placeholder="Your Full Name" />
-                    <Input placeholder="Email Address" type="email" />
-                    <Input placeholder="Phone Number" type="tel" />
-                    <Input placeholder="Type of Food Items" />
-                    <Input placeholder="Approximate Quantity (kg)" type="number" />
-                    <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">
-                      <option>Preferred Method</option>
-                      <option>Drop-off at Collection Point</option>
-                      <option>Schedule a Pickup</option>
-                      <option>Bulk Donation (Contact Us)</option>
+                    <Input placeholder="Your Full Name" value={form.name} onChange={set("name")} />
+                    <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
+                    <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
+                    <Input placeholder="Type of Food Items" value={form.items} onChange={set("items")} />
+                    <Input placeholder="Approximate Quantity (kg)" value={form.quantity} onChange={set("quantity")} />
+                    <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.method} onChange={set("method")}>
+                      <option value="">Preferred Method</option>
+                      <option value="drop-off">Drop-off at Collection Point</option>
+                      <option value="pickup">Schedule a Pickup</option>
+                      <option value="bulk">Bulk Donation (Contact Us)</option>
                     </select>
-                    <Textarea placeholder="Additional Notes" />
-                    <Button variant="warm" className="w-full">Submit Food Donation</Button>
+                    <Input placeholder="Donation Amount (₹)" type="number" value={form.amount} onChange={set("amount")} />
+                    <Textarea placeholder="Additional Notes" value={form.notes} onChange={set("notes")} />
+                    <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>
+                      {submitting ? "Submitting…" : "Proceed to Pay"}
+                    </Button>
                   </div>
                 </div>
               </motion.div>
@@ -103,20 +193,23 @@ const Donate = () => {
                 <div className="bg-card rounded-2xl p-6 shadow-card">
                   <h3 className="font-display text-xl font-bold text-foreground mb-4">Medicine Donation Form</h3>
                   <div className="space-y-4">
-                    <Input placeholder="Your Full Name" />
-                    <Input placeholder="Email Address" type="email" />
-                    <Input placeholder="Phone Number" type="tel" />
-                    <Input placeholder="Type of Medicine" />
-                    <Input placeholder="Quantity" type="number" />
-                    <Input placeholder="Earliest Expiry Date" type="date" />
-                    <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">
-                      <option>Medicine Type</option>
-                      <option>Over-the-Counter</option>
-                      <option>Prescription (with authorization)</option>
-                      <option>First Aid Supplies</option>
+                    <Input placeholder="Your Full Name" value={form.name} onChange={set("name")} />
+                    <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
+                    <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
+                    <Input placeholder="Type of Medicine" value={form.items} onChange={set("items")} />
+                    <Input placeholder="Quantity" value={form.quantity} onChange={set("quantity")} />
+                    <Input placeholder="Earliest Expiry Date" type="date" value={form.expiryDate} onChange={set("expiryDate")} />
+                    <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.medicineType} onChange={set("medicineType")}>
+                      <option value="">Medicine Type</option>
+                      <option value="otc">Over-the-Counter</option>
+                      <option value="prescription">Prescription (with authorization)</option>
+                      <option value="first-aid">First Aid Supplies</option>
                     </select>
-                    <Textarea placeholder="Storage Requirements / Notes" />
-                    <Button variant="green" className="w-full">Submit Medicine Donation</Button>
+                    <Input placeholder="Donation Amount (₹)" type="number" value={form.amount} onChange={set("amount")} />
+                    <Textarea placeholder="Storage Requirements / Notes" value={form.notes} onChange={set("notes")} />
+                    <Button variant="green" className="w-full" onClick={submitDonation} disabled={submitting}>
+                      {submitting ? "Submitting…" : "Proceed to Pay"}
+                    </Button>
                   </div>
                 </div>
               </motion.div>
@@ -129,19 +222,26 @@ const Donate = () => {
                   Partner with us for CSR initiatives. We provide complete documentation, impact reports, and tax benefits.
                 </p>
                 <div className="space-y-4">
-                  <Input placeholder="Company Name" />
-                  <Input placeholder="Contact Person" />
-                  <Input placeholder="Email Address" type="email" />
-                  <Input placeholder="Phone Number" type="tel" />
-                  <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">
-                    <option>Donation Type</option>
-                    <option>Food Donation</option>
-                    <option>Medicine Donation</option>
-                    <option>Both</option>
-                    <option>Monetary Contribution</option>
+                  <Input placeholder="Company Name" value={form.companyName} onChange={set("companyName")} />
+                  <Input placeholder="Contact Person" value={form.contactPerson} onChange={set("contactPerson")} />
+                  <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
+                  <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
+                  <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.items} onChange={set("items")}>
+                    <option value="">Donation Type</option>
+                    <option value="food">Food Donation</option>
+                    <option value="medicine">Medicine Donation</option>
+                    <option value="both">Both</option>
+                    <option value="monetary">Monetary Contribution</option>
                   </select>
-                  <Textarea placeholder="Tell us about your CSR goals and how we can collaborate" rows={4} />
-                  <Button variant="warm" className="w-full">Submit Partnership Inquiry</Button>
+                  <Input placeholder="Donation Amount (₹)" type="number" value={form.amount} onChange={set("amount")} />
+                  <Textarea placeholder="Tell us about your CSR goals and how we can collaborate" rows={4} value={form.notes} onChange={set("notes")} />
+                  <Button variant="warm" className="w-full" onClick={() => {
+                    if (!form.companyName) { setForm(f => ({ ...f, name: form.companyName || form.contactPerson })); }
+                    setForm(f => ({ ...f, name: f.companyName || f.contactPerson || f.name }));
+                    submitDonation();
+                  }} disabled={submitting}>
+                    {submitting ? "Submitting…" : "Proceed to Pay"}
+                  </Button>
                 </div>
               </motion.div>
             )}
@@ -149,6 +249,16 @@ const Donate = () => {
         </div>
       </div>
       <Footer />
+
+      {showPayment && currentDonationId && (
+        <UPIPayment
+          amount={amount}
+          donationId={currentDonationId}
+          donorName={form.name || form.companyName || "Donor"}
+          onPaymentConfirmed={handlePaymentConfirmed}
+          onClose={closePayment}
+        />
+      )}
     </div>
   );
 };
