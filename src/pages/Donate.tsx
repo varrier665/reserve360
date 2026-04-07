@@ -47,7 +47,8 @@ const Donate = () => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const submitDonation = async () => {
-    if (!form.name.trim() || !form.email.trim()) {
+    const donorName = tab === "corporate" ? (form.companyName || form.contactPerson) : form.name;
+    if (!donorName.trim() || !form.email.trim()) {
       toast({ title: "Please fill in your name and email", variant: "destructive" });
       return;
     }
