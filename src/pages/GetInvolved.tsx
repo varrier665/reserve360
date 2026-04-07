@@ -5,70 +5,125 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { Users, Handshake, Megaphone } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
-const GetInvolved = () => (
-  <div className="min-h-screen">
-    <Navbar />
-    <div className="pt-24 pb-20">
-      <div className="container mx-auto px-4">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">Get Involved</h1>
-          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-            There are many ways to contribute — donate, volunteer, or partner with us.
-          </p>
-        </motion.div>
+interface VolunteerForm {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  city: string;
+  interest: string;
+  about: string;
+}
 
-        {/* Opportunity types */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
-          {[
-            { icon: Users, title: "Volunteer", desc: "Help with logistics, awareness campaigns, or local coordination in your area." },
-            { icon: Handshake, title: "Partner With Us", desc: "NGOs and organizations can register to receive donations and collaborate." },
-            { icon: Megaphone, title: "Start a Campaign", desc: "Organize your own fundraising drive and rally your community to donate." },
-          ].map((item, i) => (
-            <motion.div
-              key={item.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-card rounded-2xl p-6 shadow-card text-center"
-            >
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                <item.icon className="h-7 w-7 text-primary" />
+const emptyForm: VolunteerForm = {
+  firstName: "", lastName: "", email: "", phone: "",
+  city: "", interest: "", about: "",
+};
+
+const GetInvolved = () => {
+  const [form, setForm] = useState<VolunteerForm>(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
+
+  const set = (key: keyof VolunteerForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const handleSubmit = async () => {
+    if (!form.firstName.trim() || !form.email.trim()) {
+      toast({ title: "Please fill your name and email ID", variant: "destructive" });
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.from("volunteer_applications").insert({
+      first_name: form.firstName.trim(),
+      last_name: form.lastName.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim() || null,
+      city: form.city.trim() || null,
+      area_of_interest: form.interest || null,
+      about: form.about.trim() || null,
+    } as any);
+    setSubmitting(false);
+
+    if (error) {
+      toast({ title: "Error submitting application", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Application submitted!", description: "Our team will reach out to you soon." });
+    setForm(emptyForm);
+  };
+
+  return (
+    <div className="min-h-screen">
+      <Navbar />
+      <div className="pt-24 pb-20">
+        <div className="container mx-auto px-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">Get Involved</h1>
+            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
+              There are many ways to contribute — donate, volunteer, or partner with us.
+            </p>
+          </motion.div>
+
+          {/* Opportunity types */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
+            {[
+              { icon: Users, title: "Volunteer", desc: "Help with logistics, awareness campaigns, or local coordination in your area." },
+              { icon: Handshake, title: "Partner With Us", desc: "NGOs and organizations can register to receive donations and collaborate." },
+              { icon: Megaphone, title: "Start a Campaign", desc: "Organize your own fundraising drive and rally your community to donate." },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-card rounded-2xl p-6 shadow-card text-center"
+              >
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                  <item.icon className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-foreground mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Volunteer Form */}
+          <div className="max-w-2xl mx-auto bg-card rounded-2xl p-8 shadow-card">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">Volunteer Application</h2>
+            <p className="text-muted-foreground mb-6 text-sm">Fill in the form below and our team will reach out to you.</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Input placeholder="First Name" value={form.firstName} onChange={set("firstName")} />
+                <Input placeholder="Last Name" value={form.lastName} onChange={set("lastName")} />
               </div>
-              <h3 className="font-display text-xl font-bold text-foreground mb-2">{item.title}</h3>
-              <p className="text-sm text-muted-foreground">{item.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Volunteer Form */}
-        <div className="max-w-2xl mx-auto bg-card rounded-2xl p-8 shadow-card">
-          <h2 className="font-display text-2xl font-bold text-foreground mb-2">Volunteer Application</h2>
-          <p className="text-muted-foreground mb-6 text-sm">Fill in the form below and our team will reach out to you.</p>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input placeholder="First Name" />
-              <Input placeholder="Last Name" />
+              <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
+              <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
+              <Input placeholder="City / District" value={form.city} onChange={set("city")} />
+              <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.interest} onChange={set("interest")}>
+                <option value="">Area of Interest</option>
+                <option value="logistics">Logistics & Distribution</option>
+                <option value="awareness">Awareness & Outreach</option>
+                <option value="fundraising">Fundraising</option>
+                <option value="coordination">Local Coordination</option>
+              </select>
+              <Textarea placeholder="Tell us about yourself and why you'd like to volunteer" rows={4} value={form.about} onChange={set("about")} />
+              <Button variant="warm" className="w-full" onClick={handleSubmit} disabled={submitting}>
+                {submitting ? "Submitting…" : "Submit Application"}
+              </Button>
             </div>
-            <Input placeholder="Email Address" type="email" />
-            <Input placeholder="Phone Number" type="tel" />
-            <Input placeholder="City / District" />
-            <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm">
-              <option>Area of Interest</option>
-              <option>Logistics & Distribution</option>
-              <option>Awareness & Outreach</option>
-              <option>Fundraising</option>
-              <option>Local Coordination</option>
-            </select>
-            <Textarea placeholder="Tell us about yourself and why you'd like to volunteer" rows={4} />
-            <Button variant="warm" className="w-full">Submit Application</Button>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
-    <Footer />
-  </div>
-);
+  );
+};
 
 export default GetInvolved;
