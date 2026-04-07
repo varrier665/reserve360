@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { Apple, Pill, Building2 } from "lucide-react";
+import { Apple, Pill, Building2, Monitor } from "lucide-react";
 import { useState } from "react";
 import donateFood from "@/assets/donate-food.jpg";
 import donateMedicine from "@/assets/donate-medicine.jpg";
@@ -25,16 +25,19 @@ interface DonationForm {
   companyName: string;
   contactPerson: string;
   amount: string;
+  condition: string;
 }
 
 const emptyForm: DonationForm = {
   name: "", email: "", phone: "", items: "", quantity: "",
   method: "", notes: "", expiryDate: "", medicineType: "",
-  companyName: "", contactPerson: "", amount: "",
+  companyName: "", contactPerson: "", amount: "", condition: "",
 };
 
+type TabKey = "food" | "medicine" | "electronics" | "corporate";
+
 const Donate = () => {
-  const [tab, setTab] = useState<"food" | "medicine" | "corporate">("food");
+  const [tab, setTab] = useState<TabKey>("food");
   const [form, setForm] = useState<DonationForm>(emptyForm);
   const [showPayment, setShowPayment] = useState(false);
   const [currentDonationId, setCurrentDonationId] = useState("");
@@ -44,15 +47,12 @@ const Donate = () => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const submitDonation = async () => {
-    if (!form.name || !form.email) {
+    if (!form.name.trim() || !form.email.trim()) {
       toast({ title: "Please fill in your name and email", variant: "destructive" });
       return;
     }
-    const amount = parseFloat(form.amount);
-    if (!amount || amount <= 0) {
-      toast({ title: "Please enter a valid donation amount", variant: "destructive" });
-      return;
-    }
+
+    const amount = parseFloat(form.amount) || 0;
 
     setSubmitting(true);
     const { data, error } = await supabase.from("donations").insert({
@@ -68,8 +68,8 @@ const Donate = () => {
       company_name: form.companyName || null,
       contact_person: form.contactPerson || null,
       notes: form.notes || null,
-      amount,
-      payment_status: "pending",
+      amount: amount > 0 ? amount : null,
+      payment_status: amount > 0 ? "pending" : "pledge",
     } as any).select().single();
 
     setSubmitting(false);
@@ -79,8 +79,13 @@ const Donate = () => {
       return;
     }
 
-    setCurrentDonationId((data as any).id);
-    setShowPayment(true);
+    if (amount > 0) {
+      setCurrentDonationId((data as any).id);
+      setShowPayment(true);
+    } else {
+      toast({ title: "Donation recorded!", description: "Thank you for your pledge. Our team will reach out." });
+      setForm(emptyForm);
+    }
   };
 
   const handlePaymentConfirmed = async (transactionId: string) => {
@@ -112,10 +117,11 @@ const Donate = () => {
           </motion.div>
 
           {/* Tabs */}
-          <div className="flex justify-center gap-3 mb-12">
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
             {[
               { key: "food" as const, label: "Donate Food", icon: Apple },
               { key: "medicine" as const, label: "Donate Medicine", icon: Pill },
+              { key: "electronics" as const, label: "Donate Electronics", icon: Monitor },
               { key: "corporate" as const, label: "Corporate", icon: Building2 },
             ].map((t) => (
               <button
@@ -163,10 +169,10 @@ const Donate = () => {
                       <option value="pickup">Schedule a Pickup</option>
                       <option value="bulk">Bulk Donation (Contact Us)</option>
                     </select>
-                    <Input placeholder="Donation Amount (₹)" type="number" value={form.amount} onChange={set("amount")} />
+                    <Input placeholder="Donation Amount ₹ (optional)" type="number" value={form.amount} onChange={set("amount")} />
                     <Textarea placeholder="Additional Notes" value={form.notes} onChange={set("notes")} />
                     <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>
-                      {submitting ? "Submitting…" : "Proceed to Pay"}
+                      {submitting ? "Submitting…" : "Donate"}
                     </Button>
                   </div>
                 </div>
@@ -205,10 +211,59 @@ const Donate = () => {
                       <option value="prescription">Prescription (with authorization)</option>
                       <option value="first-aid">First Aid Supplies</option>
                     </select>
-                    <Input placeholder="Donation Amount (₹)" type="number" value={form.amount} onChange={set("amount")} />
+                    <Input placeholder="Donation Amount ₹ (optional)" type="number" value={form.amount} onChange={set("amount")} />
                     <Textarea placeholder="Storage Requirements / Notes" value={form.notes} onChange={set("notes")} />
                     <Button variant="green" className="w-full" onClick={submitDonation} disabled={submitting}>
-                      {submitting ? "Submitting…" : "Proceed to Pay"}
+                      {submitting ? "Submitting…" : "Donate"}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {tab === "electronics" && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid md:grid-cols-2 gap-10">
+                <div>
+                  <div className="rounded-2xl shadow-card mb-6 bg-muted h-52 flex items-center justify-center">
+                    <Monitor className="h-20 w-20 text-muted-foreground/40" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-foreground mb-3">What We Accept</h3>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {["Working laptops and desktops", "Tablets and smartphones", "Chargers, cables, and accessories", "Printers and peripherals", "Refurbished or gently used electronics"].map((item) => (
+                      <li key={item} className="flex items-start gap-2"><span className="text-secondary mt-0.5">✓</span>{item}</li>
+                    ))}
+                  </ul>
+                  <h3 className="font-display text-xl font-bold text-foreground mt-6 mb-3">What We Cannot Accept</h3>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {["Non-functional devices without disclosure", "CRT monitors or TVs", "Devices with data not wiped", "Heavily damaged or hazardous items"].map((item) => (
+                      <li key={item} className="flex items-start gap-2"><span className="text-destructive mt-0.5">✗</span>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="bg-card rounded-2xl p-6 shadow-card">
+                  <h3 className="font-display text-xl font-bold text-foreground mb-4">Electronics Donation Form</h3>
+                  <div className="space-y-4">
+                    <Input placeholder="Your Full Name" value={form.name} onChange={set("name")} />
+                    <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
+                    <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
+                    <Input placeholder="Item Description (e.g. Dell Laptop, Samsung Tablet)" value={form.items} onChange={set("items")} />
+                    <Input placeholder="Quantity" value={form.quantity} onChange={set("quantity")} />
+                    <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.condition} onChange={set("condition")}>
+                      <option value="">Condition</option>
+                      <option value="new">New / Unused</option>
+                      <option value="good">Good (Working)</option>
+                      <option value="fair">Fair (Minor Issues)</option>
+                      <option value="for-parts">For Parts / Not Working</option>
+                    </select>
+                    <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.method} onChange={set("method")}>
+                      <option value="">Preferred Method</option>
+                      <option value="drop-off">Drop-off at Collection Point</option>
+                      <option value="pickup">Schedule a Pickup</option>
+                    </select>
+                    <Input placeholder="Donation Amount ₹ (optional)" type="number" value={form.amount} onChange={set("amount")} />
+                    <Textarea placeholder="Additional Notes (e.g. accessories included, data wiped)" value={form.notes} onChange={set("notes")} />
+                    <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>
+                      {submitting ? "Submitting…" : "Donate"}
                     </Button>
                   </div>
                 </div>
@@ -230,13 +285,14 @@ const Donate = () => {
                     <option value="">Donation Type</option>
                     <option value="food">Food Donation</option>
                     <option value="medicine">Medicine Donation</option>
-                    <option value="both">Both</option>
+                    <option value="electronics">Electronics Donation</option>
+                    <option value="both">Multiple Types</option>
                     <option value="monetary">Monetary Contribution</option>
                   </select>
-                  <Input placeholder="Donation Amount (₹)" type="number" value={form.amount} onChange={set("amount")} />
+                  <Input placeholder="Donation Amount ₹ (optional)" type="number" value={form.amount} onChange={set("amount")} />
                   <Textarea placeholder="Tell us about your CSR goals and how we can collaborate" rows={4} value={form.notes} onChange={set("notes")} />
                   <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>
-                    {submitting ? "Submitting…" : "Proceed to Pay"}
+                    {submitting ? "Submitting…" : "Donate"}
                   </Button>
                 </div>
               </motion.div>

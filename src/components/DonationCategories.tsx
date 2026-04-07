@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Monitor } from "lucide-react";
 import donateFood from "@/assets/donate-food.jpg";
 import donateMedicine from "@/assets/donate-medicine.jpg";
 
@@ -17,6 +18,12 @@ const categories = [
     image: donateMedicine,
     items: ["Pain Relievers", "Antibiotics", "First Aid Kits", "Vitamins", "Sanitizers"],
   },
+  {
+    title: "Donate Electronics",
+    desc: "Working laptops, tablets, smartphones, and accessories to bridge the digital divide for underserved communities.",
+    image: null,
+    items: ["Laptops", "Tablets", "Smartphones", "Chargers", "Peripherals"],
+  },
 ];
 
 const DonationCategories = () => (
@@ -30,25 +37,32 @@ const DonationCategories = () => (
       >
         <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">What You Can Donate</h2>
         <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-          We accept food and medicine donations that meet our quality and safety standards.
+          We accept food, medicine, and electronics donations that meet our quality and safety standards.
         </p>
       </motion.div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {categories.map((cat, i) => (
           <motion.div
             key={cat.title}
-            initial={{ opacity: 0, x: i === 0 ? -30 : 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ delay: i * 0.1 }}
             className="rounded-2xl overflow-hidden bg-card shadow-card group hover:shadow-warm transition-shadow duration-300"
           >
             <div className="h-52 overflow-hidden">
-              <img
-                src={cat.image}
-                alt={cat.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
+              {cat.image ? (
+                <img
+                  src={cat.image}
+                  alt={cat.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <Monitor className="h-16 w-16 text-muted-foreground/40" />
+                </div>
+              )}
             </div>
             <div className="p-6">
               <h3 className="font-display text-2xl font-bold text-foreground mb-2">{cat.title}</h3>
