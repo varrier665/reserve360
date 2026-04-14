@@ -39,14 +39,39 @@ const AdminDashboard = () => {
 
   useEffect(() => { fetchAll(); }, []);
 
+  const sendNotification = async (type: string, email: string, name: string, extra?: Record<string, any>) => {
+    try {
+      await supabase.functions.invoke("send-notification", {
+        body: { type, recipientEmail: email, recipientName: name, ...extra },
+      });
+    } catch (e) {
+      console.error("Notification error:", e);
+    }
+  };
+
   const updateDonationPayment = async (id: string, status: string) => {
+    const donation = donations.find(d => d.id === id);
     await supabase.from("donations").update({ payment_status: status } as any).eq("id", id);
+    if (donation) {
+      sendNotification(
+        status === "received" ? "donation_received" : "donation_not_received",
+        donation.email, donation.donor_name,
+        { donationAmount: donation.amount, transactionId: donation.upi_transaction_id }
+      );
+    }
     toast({ title: `Payment marked as ${status}` });
     fetchAll();
   };
 
   const updateVolunteerStatus = async (id: string, status: string) => {
+    const vol = volunteers.find(v => v.id === id);
     await supabase.from("volunteer_applications").update({ status } as any).eq("id", id);
+    if (vol) {
+      sendNotification(
+        status === "accepted" ? "volunteer_accepted" : "volunteer_rejected",
+        vol.email, vol.first_name + (vol.last_name ? ` ${vol.last_name}` : "")
+      );
+    }
     toast({ title: `Volunteer ${status}` });
     fetchAll();
   };
