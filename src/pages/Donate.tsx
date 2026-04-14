@@ -11,21 +11,13 @@ import donateMedicine from "@/assets/donate-medicine.jpg";
 import UPIPayment from "@/components/UPIPayment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { validateDonationForm } from "@/lib/validation";
 
 interface DonationForm {
-  name: string;
-  email: string;
-  phone: string;
-  items: string;
-  quantity: string;
-  method: string;
-  notes: string;
-  expiryDate: string;
-  medicineType: string;
-  companyName: string;
-  contactPerson: string;
-  amount: string;
-  condition: string;
+  name: string; email: string; phone: string; items: string;
+  quantity: string; method: string; notes: string; expiryDate: string;
+  medicineType: string; companyName: string; contactPerson: string;
+  amount: string; condition: string;
 }
 
 const emptyForm: DonationForm = {
@@ -47,14 +39,13 @@ const Donate = () => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const submitDonation = async () => {
-    const donorName = tab === "corporate" ? (form.companyName || form.contactPerson) : form.name;
-    if (!donorName.trim() || !form.email.trim()) {
-      toast({ title: "Please fill in your name and email", variant: "destructive" });
+    const errors = validateDonationForm(form, tab);
+    if (errors.length > 0) {
+      toast({ title: errors[0].message, variant: "destructive" });
       return;
     }
 
     const amount = parseFloat(form.amount) || 0;
-
     setSubmitting(true);
     const { data, error } = await supabase.from("donations").insert({
       donor_name: form.name || form.companyName || form.contactPerson,
@@ -72,7 +63,6 @@ const Donate = () => {
       amount: amount > 0 ? amount : null,
       payment_status: amount > 0 ? "pending" : "pledge",
     } as any).select().single();
-
     setSubmitting(false);
 
     if (error) {
@@ -84,7 +74,7 @@ const Donate = () => {
       setCurrentDonationId((data as any).id);
       setShowPayment(true);
     } else {
-      toast({ title: "Donation recorded!", description: "Thank you for your pledge. Our team will reach out." });
+      toast({ title: "Donation recorded!", description: "Thank you for your pledge." });
       setForm(emptyForm);
     }
   };
@@ -94,15 +84,10 @@ const Donate = () => {
       upi_transaction_id: transactionId,
       payment_status: "completed",
     } as any).eq("id", currentDonationId);
-
     toast({ title: "Donation recorded!", description: "We'll verify your payment shortly." });
   };
 
-  const closePayment = () => {
-    setShowPayment(false);
-    setForm(emptyForm);
-  };
-
+  const closePayment = () => { setShowPayment(false); setForm(emptyForm); };
   const amount = parseFloat(form.amount) || 0;
 
   return (
@@ -112,28 +97,19 @@ const Donate = () => {
         <div className="container mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">Make a Donation</h1>
-            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-              Choose how you'd like to contribute — every donation helps save lives.
-            </p>
+            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Choose how you'd like to contribute — every donation helps save lives.</p>
           </motion.div>
 
-          {/* Tabs */}
           <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {[
+            {([
               { key: "food" as const, label: "Donate Food", icon: Apple },
               { key: "medicine" as const, label: "Donate Medicine", icon: Pill },
               { key: "electronics" as const, label: "Donate Electronics", icon: Monitor },
               { key: "corporate" as const, label: "Corporate", icon: Building2 },
-            ].map((t) => (
-              <button
-                key={t.key}
-                onClick={() => { setTab(t.key); setForm(emptyForm); }}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all ${
-                  tab === t.key ? "bg-primary text-primary-foreground shadow-warm" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                <t.icon className="h-4 w-4" />
-                {t.label}
+            ]).map((t) => (
+              <button key={t.key} onClick={() => { setTab(t.key); setForm(emptyForm); }}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium transition-all ${tab === t.key ? "bg-primary text-primary-foreground shadow-warm" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                <t.icon className="h-4 w-4" /> {t.label}
               </button>
             ))}
           </div>
@@ -145,23 +121,15 @@ const Donate = () => {
                   <img src={donateFood} alt="Food donations" className="rounded-2xl shadow-card mb-6" />
                   <h3 className="font-display text-xl font-bold text-foreground mb-3">What We Accept</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
-                    {["Non-perishable food items (rice, dal, flour)", "Sealed and packaged foods", "Canned goods and dry fruits", "Baby food and formula (sealed)", "Cooking oil and spices"].map((item) => (
-                      <li key={item} className="flex items-start gap-2"><span className="text-secondary mt-0.5">✓</span>{item}</li>
-                    ))}
-                  </ul>
-                  <h3 className="font-display text-xl font-bold text-foreground mt-6 mb-3">What We Cannot Accept</h3>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    {["Perishable items without cold chain", "Opened or damaged packages", "Expired food products", "Homemade food (safety concerns)"].map((item) => (
-                      <li key={item} className="flex items-start gap-2"><span className="text-destructive mt-0.5">✗</span>{item}</li>
-                    ))}
+                    {["Non-perishable food items (rice, dal, flour)", "Sealed and packaged foods", "Canned goods and dry fruits", "Baby food and formula (sealed)", "Cooking oil and spices"].map(i => <li key={i} className="flex items-start gap-2"><span className="text-secondary mt-0.5">✓</span>{i}</li>)}
                   </ul>
                 </div>
                 <div className="bg-card rounded-2xl p-6 shadow-card">
                   <h3 className="font-display text-xl font-bold text-foreground mb-4">Food Donation Form</h3>
                   <div className="space-y-4">
-                    <Input placeholder="Your Full Name" value={form.name} onChange={set("name")} />
-                    <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
-                    <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
+                    <Input placeholder="Your Full Name *" value={form.name} onChange={set("name")} />
+                    <Input placeholder="Email Address *" type="email" value={form.email} onChange={set("email")} />
+                    <Input placeholder="Phone Number (10 digits)" type="tel" value={form.phone} onChange={set("phone")} />
                     <Input placeholder="Type of Food Items" value={form.items} onChange={set("items")} />
                     <Input placeholder="Approximate Quantity (kg)" value={form.quantity} onChange={set("quantity")} />
                     <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.method} onChange={set("method")}>
@@ -172,9 +140,7 @@ const Donate = () => {
                     </select>
                     <Input placeholder="Donation Amount ₹ (optional)" type="number" value={form.amount} onChange={set("amount")} />
                     <Textarea placeholder="Additional Notes" value={form.notes} onChange={set("notes")} />
-                    <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>
-                      {submitting ? "Submitting…" : "Donate"}
-                    </Button>
+                    <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>{submitting ? "Submitting…" : "Donate"}</Button>
                   </div>
                 </div>
               </motion.div>
@@ -186,23 +152,15 @@ const Donate = () => {
                   <img src={donateMedicine} alt="Medicine donations" className="rounded-2xl shadow-card mb-6" />
                   <h3 className="font-display text-xl font-bold text-foreground mb-3">What We Accept</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
-                    {["Unopened, unexpired medicines", "Over-the-counter medications", "First aid supplies and kits", "Vitamins and supplements (sealed)", "Medical devices (bandages, thermometers)"].map((item) => (
-                      <li key={item} className="flex items-start gap-2"><span className="text-secondary mt-0.5">✓</span>{item}</li>
-                    ))}
-                  </ul>
-                  <h3 className="font-display text-xl font-bold text-foreground mt-6 mb-3">What We Cannot Accept</h3>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    {["Expired medications", "Opened or tampered packages", "Controlled substances (without authorization)", "Unlabeled or unidentified medicines"].map((item) => (
-                      <li key={item} className="flex items-start gap-2"><span className="text-destructive mt-0.5">✗</span>{item}</li>
-                    ))}
+                    {["Unopened, unexpired medicines", "Over-the-counter medications", "First aid supplies and kits", "Vitamins and supplements (sealed)", "Medical devices (bandages, thermometers)"].map(i => <li key={i} className="flex items-start gap-2"><span className="text-secondary mt-0.5">✓</span>{i}</li>)}
                   </ul>
                 </div>
                 <div className="bg-card rounded-2xl p-6 shadow-card">
                   <h3 className="font-display text-xl font-bold text-foreground mb-4">Medicine Donation Form</h3>
                   <div className="space-y-4">
-                    <Input placeholder="Your Full Name" value={form.name} onChange={set("name")} />
-                    <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
-                    <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
+                    <Input placeholder="Your Full Name *" value={form.name} onChange={set("name")} />
+                    <Input placeholder="Email Address *" type="email" value={form.email} onChange={set("email")} />
+                    <Input placeholder="Phone Number (10 digits)" type="tel" value={form.phone} onChange={set("phone")} />
                     <Input placeholder="Type of Medicine" value={form.items} onChange={set("items")} />
                     <Input placeholder="Quantity" value={form.quantity} onChange={set("quantity")} />
                     <Input placeholder="Earliest Expiry Date" type="date" value={form.expiryDate} onChange={set("expiryDate")} />
@@ -214,9 +172,7 @@ const Donate = () => {
                     </select>
                     <Input placeholder="Donation Amount ₹ (optional)" type="number" value={form.amount} onChange={set("amount")} />
                     <Textarea placeholder="Storage Requirements / Notes" value={form.notes} onChange={set("notes")} />
-                    <Button variant="green" className="w-full" onClick={submitDonation} disabled={submitting}>
-                      {submitting ? "Submitting…" : "Donate"}
-                    </Button>
+                    <Button variant="green" className="w-full" onClick={submitDonation} disabled={submitting}>{submitting ? "Submitting…" : "Donate"}</Button>
                   </div>
                 </div>
               </motion.div>
@@ -230,24 +186,16 @@ const Donate = () => {
                   </div>
                   <h3 className="font-display text-xl font-bold text-foreground mb-3">What We Accept</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
-                    {["Working laptops and desktops", "Tablets and smartphones", "Chargers, cables, and accessories", "Printers and peripherals", "Refurbished or gently used electronics"].map((item) => (
-                      <li key={item} className="flex items-start gap-2"><span className="text-secondary mt-0.5">✓</span>{item}</li>
-                    ))}
-                  </ul>
-                  <h3 className="font-display text-xl font-bold text-foreground mt-6 mb-3">What We Cannot Accept</h3>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    {["Non-functional devices without disclosure", "CRT monitors or TVs", "Devices with data not wiped", "Heavily damaged or hazardous items"].map((item) => (
-                      <li key={item} className="flex items-start gap-2"><span className="text-destructive mt-0.5">✗</span>{item}</li>
-                    ))}
+                    {["Working laptops and desktops", "Tablets and smartphones", "Chargers, cables, and accessories", "Printers and peripherals", "Refurbished or gently used electronics"].map(i => <li key={i} className="flex items-start gap-2"><span className="text-secondary mt-0.5">✓</span>{i}</li>)}
                   </ul>
                 </div>
                 <div className="bg-card rounded-2xl p-6 shadow-card">
                   <h3 className="font-display text-xl font-bold text-foreground mb-4">Electronics Donation Form</h3>
                   <div className="space-y-4">
-                    <Input placeholder="Your Full Name" value={form.name} onChange={set("name")} />
-                    <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
-                    <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
-                    <Input placeholder="Item Description (e.g. Dell Laptop, Samsung Tablet)" value={form.items} onChange={set("items")} />
+                    <Input placeholder="Your Full Name *" value={form.name} onChange={set("name")} />
+                    <Input placeholder="Email Address *" type="email" value={form.email} onChange={set("email")} />
+                    <Input placeholder="Phone Number (10 digits)" type="tel" value={form.phone} onChange={set("phone")} />
+                    <Input placeholder="Item Description (e.g. Dell Laptop)" value={form.items} onChange={set("items")} />
                     <Input placeholder="Quantity" value={form.quantity} onChange={set("quantity")} />
                     <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.condition} onChange={set("condition")}>
                       <option value="">Condition</option>
@@ -262,10 +210,8 @@ const Donate = () => {
                       <option value="pickup">Schedule a Pickup</option>
                     </select>
                     <Input placeholder="Donation Amount ₹ (optional)" type="number" value={form.amount} onChange={set("amount")} />
-                    <Textarea placeholder="Additional Notes (e.g. accessories included, data wiped)" value={form.notes} onChange={set("notes")} />
-                    <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>
-                      {submitting ? "Submitting…" : "Donate"}
-                    </Button>
+                    <Textarea placeholder="Additional Notes" value={form.notes} onChange={set("notes")} />
+                    <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>{submitting ? "Submitting…" : "Donate"}</Button>
                   </div>
                 </div>
               </motion.div>
@@ -274,14 +220,12 @@ const Donate = () => {
             {tab === "corporate" && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto bg-card rounded-2xl p-8 shadow-card">
                 <h3 className="font-display text-2xl font-bold text-foreground mb-2">Corporate Donations</h3>
-                <p className="text-muted-foreground mb-6">
-                  Partner with us for CSR initiatives. We provide complete documentation, impact reports, and tax benefits.
-                </p>
+                <p className="text-muted-foreground mb-6">Partner with us for CSR initiatives. We provide complete documentation, impact reports, and tax benefits.</p>
                 <div className="space-y-4">
-                  <Input placeholder="Company Name" value={form.companyName} onChange={set("companyName")} />
-                  <Input placeholder="Contact Person" value={form.contactPerson} onChange={set("contactPerson")} />
-                  <Input placeholder="Email Address" type="email" value={form.email} onChange={set("email")} />
-                  <Input placeholder="Phone Number" type="tel" value={form.phone} onChange={set("phone")} />
+                  <Input placeholder="Company Name *" value={form.companyName} onChange={set("companyName")} />
+                  <Input placeholder="Contact Person *" value={form.contactPerson} onChange={set("contactPerson")} />
+                  <Input placeholder="Email Address *" type="email" value={form.email} onChange={set("email")} />
+                  <Input placeholder="Phone Number (10 digits)" type="tel" value={form.phone} onChange={set("phone")} />
                   <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.items} onChange={set("items")}>
                     <option value="">Donation Type</option>
                     <option value="food">Food Donation</option>
@@ -291,10 +235,8 @@ const Donate = () => {
                     <option value="monetary">Monetary Contribution</option>
                   </select>
                   <Input placeholder="Donation Amount ₹ (optional)" type="number" value={form.amount} onChange={set("amount")} />
-                  <Textarea placeholder="Tell us about your CSR goals and how we can collaborate" rows={4} value={form.notes} onChange={set("notes")} />
-                  <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>
-                    {submitting ? "Submitting…" : "Donate"}
-                  </Button>
+                  <Textarea placeholder="Tell us about your CSR goals" rows={4} value={form.notes} onChange={set("notes")} />
+                  <Button variant="warm" className="w-full" onClick={submitDonation} disabled={submitting}>{submitting ? "Submitting…" : "Donate"}</Button>
                 </div>
               </motion.div>
             )}
@@ -304,13 +246,7 @@ const Donate = () => {
       <Footer />
 
       {showPayment && currentDonationId && (
-        <UPIPayment
-          amount={amount}
-          donationId={currentDonationId}
-          donorName={form.name || form.companyName || "Donor"}
-          onPaymentConfirmed={handlePaymentConfirmed}
-          onClose={closePayment}
-        />
+        <UPIPayment amount={amount} donationId={currentDonationId} donorName={form.name || form.companyName || "Donor"} onPaymentConfirmed={handlePaymentConfirmed} onClose={closePayment} />
       )}
     </div>
   );
