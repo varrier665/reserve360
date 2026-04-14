@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,13 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, role } = useAuth();
+  const { signIn, user, role } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && role === "admin") navigate("/admin", { replace: true });
+    if (user && role === "ngo") navigate("/ngo", { replace: true });
+  }, [user, role]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +31,6 @@ const Login = () => {
       toast({ title: "Login failed", description: error, variant: "destructive" });
     } else {
       toast({ title: "Logged in successfully" });
-      // Role-based redirect will happen via useEffect in the component
-      navigate("/admin");
     }
   };
 
