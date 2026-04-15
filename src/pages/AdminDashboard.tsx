@@ -87,6 +87,46 @@ const AdminDashboard = () => {
     fetchAll();
   };
 
+  const createNgoAccount = async () => {
+    if (!ngoForm.name.trim() || !ngoForm.email.trim() || !ngoForm.password.trim()) {
+      toast({ title: "Name, email and password are required", variant: "destructive" });
+      return;
+    }
+    if (!validateEmail(ngoForm.email)) {
+      toast({ title: "Invalid email format", variant: "destructive" });
+      return;
+    }
+    if (ngoForm.phone && !validatePhone(ngoForm.phone)) {
+      toast({ title: "Phone must be 10 digits", variant: "destructive" });
+      return;
+    }
+    setCreatingNgo(true);
+    const { data, error } = await supabase.functions.invoke("create-user", {
+      body: { email: ngoForm.email, password: ngoForm.password, role: "ngo" },
+    });
+    if (error || data?.error) {
+      toast({ title: "Error creating NGO account", description: data?.error || error?.message, variant: "destructive" });
+      setCreatingNgo(false);
+      return;
+    }
+    // Create NGO record
+    await supabase.from("ngos").insert({
+      user_id: data.userId,
+      name: ngoForm.name.trim(),
+      email: ngoForm.email.trim(),
+      contact_person: ngoForm.contactPerson.trim() || null,
+      phone: ngoForm.phone.trim() || null,
+      city: ngoForm.city.trim() || null,
+      registration_number: ngoForm.regNo.trim() || null,
+      status: "approved",
+    } as any);
+    setCreatingNgo(false);
+    setShowNgoForm(false);
+    setNgoForm({ name: "", email: "", password: "", contactPerson: "", phone: "", city: "", regNo: "" });
+    toast({ title: "NGO account created successfully" });
+    fetchAll();
+  };
+
   const transactions = donations.filter(d => d.amount && d.amount > 0);
   const itemDonations = donations;
 
