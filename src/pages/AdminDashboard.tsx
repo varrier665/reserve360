@@ -324,7 +324,35 @@ const AdminDashboard = () => {
             )}
 
             {tab === "ngos" && (
-              <div className="bg-card rounded-2xl shadow-card overflow-hidden">
+              <div className="space-y-4">
+                <div className="flex justify-end">
+                  <Button variant="warm" onClick={() => setShowNgoForm(!showNgoForm)}>
+                    <Plus className="h-4 w-4 mr-1" /> Add NGO
+                  </Button>
+                </div>
+
+                {showNgoForm && (
+                  <div className="bg-card rounded-2xl p-6 shadow-card space-y-4">
+                    <h3 className="font-display text-lg font-bold text-foreground">Create NGO Account</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Input placeholder="NGO Name *" value={ngoForm.name} onChange={e => setNgoForm(f => ({ ...f, name: e.target.value }))} />
+                      <Input placeholder="Email *" type="email" value={ngoForm.email} onChange={e => setNgoForm(f => ({ ...f, email: e.target.value }))} />
+                      <Input placeholder="Password *" type="password" value={ngoForm.password} onChange={e => setNgoForm(f => ({ ...f, password: e.target.value }))} />
+                      <Input placeholder="Contact Person" value={ngoForm.contactPerson} onChange={e => setNgoForm(f => ({ ...f, contactPerson: e.target.value }))} />
+                      <Input placeholder="Phone (10 digits)" type="tel" value={ngoForm.phone} onChange={e => setNgoForm(f => ({ ...f, phone: e.target.value }))} />
+                      <Input placeholder="City" value={ngoForm.city} onChange={e => setNgoForm(f => ({ ...f, city: e.target.value }))} />
+                      <Input placeholder="Registration Number" value={ngoForm.regNo} onChange={e => setNgoForm(f => ({ ...f, regNo: e.target.value }))} />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="warm" onClick={createNgoAccount} disabled={creatingNgo}>
+                        {creatingNgo ? "Creating…" : "Create NGO Account"}
+                      </Button>
+                      <Button variant="outline" onClick={() => setShowNgoForm(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-card rounded-2xl shadow-card overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow>
