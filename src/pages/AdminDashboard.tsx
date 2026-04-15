@@ -3,11 +3,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { LogOut, CheckCircle, XCircle, Users, Heart, Building2, DollarSign } from "lucide-react";
+import { LogOut, CheckCircle, XCircle, Users, Heart, Building2, DollarSign, Plus } from "lucide-react";
+import { validateEmail, validatePhone } from "@/lib/validation";
 
 type Tab = "donations" | "transactions" | "volunteers" | "ngos";
 
@@ -19,6 +21,9 @@ const AdminDashboard = () => {
   const [volunteers, setVolunteers] = useState<any[]>([]);
   const [ngos, setNgos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNgoForm, setShowNgoForm] = useState(false);
+  const [ngoForm, setNgoForm] = useState({ name: "", email: "", password: "", contactPerson: "", phone: "", city: "", regNo: "" });
+  const [creatingNgo, setCreatingNgo] = useState(false);
 
   useEffect(() => {
     if (role === "ngo") navigate("/ngo", { replace: true });
@@ -79,6 +84,46 @@ const AdminDashboard = () => {
   const updateNgoStatus = async (id: string, status: string) => {
     await supabase.from("ngos").update({ status } as any).eq("id", id);
     toast({ title: `NGO ${status}` });
+    fetchAll();
+  };
+
+  const createNgoAccount = async () => {
+    if (!ngoForm.name.trim() || !ngoForm.email.trim() || !ngoForm.password.trim()) {
+      toast({ title: "Name, email and password are required", variant: "destructive" });
+      return;
+    }
+    if (!validateEmail(ngoForm.email)) {
+      toast({ title: "Invalid email format", variant: "destructive" });
+      return;
+    }
+    if (ngoForm.phone && !validatePhone(ngoForm.phone)) {
+      toast({ title: "Phone must be 10 digits", variant: "destructive" });
+      return;
+    }
+    setCreatingNgo(true);
+    const { data, error } = await supabase.functions.invoke("create-user", {
+      body: { email: ngoForm.email, password: ngoForm.password, role: "ngo" },
+    });
+    if (error || data?.error) {
+      toast({ title: "Error creating NGO account", description: data?.error || error?.message, variant: "destructive" });
+      setCreatingNgo(false);
+      return;
+    }
+    // Create NGO record
+    await supabase.from("ngos").insert({
+      user_id: data.userId,
+      name: ngoForm.name.trim(),
+      email: ngoForm.email.trim(),
+      contact_person: ngoForm.contactPerson.trim() || null,
+      phone: ngoForm.phone.trim() || null,
+      city: ngoForm.city.trim() || null,
+      registration_number: ngoForm.regNo.trim() || null,
+      status: "approved",
+    } as any);
+    setCreatingNgo(false);
+    setShowNgoForm(false);
+    setNgoForm({ name: "", email: "", password: "", contactPerson: "", phone: "", city: "", regNo: "" });
+    toast({ title: "NGO account created successfully" });
     fetchAll();
   };
 
@@ -279,7 +324,35 @@ const AdminDashboard = () => {
             )}
 
             {tab === "ngos" && (
-              <div className="bg-card rounded-2xl shadow-card overflow-hidden">
+              <div className="space-y-4">
+                <div className="flex justify-end">
+                  <Button variant="warm" onClick={() => setShowNgoForm(!showNgoForm)}>
+                    <Plus className="h-4 w-4 mr-1" /> Add NGO
+                  </Button>
+                </div>
+
+                {showNgoForm && (
+                  <div className="bg-card rounded-2xl p-6 shadow-card space-y-4">
+                    <h3 className="font-display text-lg font-bold text-foreground">Create NGO Account</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Input placeholder="NGO Name *" value={ngoForm.name} onChange={e => setNgoForm(f => ({ ...f, name: e.target.value }))} />
+                      <Input placeholder="Email *" type="email" value={ngoForm.email} onChange={e => setNgoForm(f => ({ ...f, email: e.target.value }))} />
+                      <Input placeholder="Password *" type="password" value={ngoForm.password} onChange={e => setNgoForm(f => ({ ...f, password: e.target.value }))} />
+                      <Input placeholder="Contact Person" value={ngoForm.contactPerson} onChange={e => setNgoForm(f => ({ ...f, contactPerson: e.target.value }))} />
+                      <Input placeholder="Phone (10 digits)" type="tel" value={ngoForm.phone} onChange={e => setNgoForm(f => ({ ...f, phone: e.target.value }))} />
+                      <Input placeholder="City" value={ngoForm.city} onChange={e => setNgoForm(f => ({ ...f, city: e.target.value }))} />
+                      <Input placeholder="Registration Number" value={ngoForm.regNo} onChange={e => setNgoForm(f => ({ ...f, regNo: e.target.value }))} />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="warm" onClick={createNgoAccount} disabled={creatingNgo}>
+                        {creatingNgo ? "Creating…" : "Create NGO Account"}
+                      </Button>
+                      <Button variant="outline" onClick={() => setShowNgoForm(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-card rounded-2xl shadow-card overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -328,6 +401,7 @@ const AdminDashboard = () => {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             )}
           </>
