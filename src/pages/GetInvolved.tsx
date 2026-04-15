@@ -23,16 +23,23 @@ const emptyForm: VolunteerForm = {
 const GetInvolved = () => {
   const [form, setForm] = useState<VolunteerForm>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const set = (key: keyof VolunteerForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+  const set = (key: keyof VolunteerForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
+    if (fieldErrors[key]) setFieldErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
+  };
 
   const handleSubmit = async () => {
     const errors = validateVolunteerForm(form);
     if (errors.length > 0) {
-      toast({ title: errors[0].message, variant: "destructive" });
+      const errMap: Record<string, string> = {};
+      errors.forEach((err) => { errMap[err.field] = err.message; });
+      setFieldErrors(errMap);
+      toast({ title: "Please fix the errors below", variant: "destructive" });
       return;
     }
+    setFieldErrors({});
 
     setSubmitting(true);
     const { error } = await supabase.from("volunteer_applications").insert({
@@ -87,11 +94,20 @@ const GetInvolved = () => {
             <p className="text-muted-foreground mb-6 text-sm">Fill in the form below and our team will reach out to you.</p>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <Input placeholder="First Name *" value={form.firstName} onChange={set("firstName")} />
+                <div>
+                  <Input placeholder="First Name *" value={form.firstName} onChange={set("firstName")} className={fieldErrors.firstName ? "border-red-500" : ""} />
+                  {fieldErrors.firstName && <p className="text-red-500 text-xs mt-1">{fieldErrors.firstName}</p>}
+                </div>
                 <Input placeholder="Last Name" value={form.lastName} onChange={set("lastName")} />
               </div>
-              <Input placeholder="Email Address *" type="email" value={form.email} onChange={set("email")} />
-              <Input placeholder="Phone Number (10 digits)" type="tel" value={form.phone} onChange={set("phone")} />
+              <div>
+                <Input placeholder="Email Address *" type="email" value={form.email} onChange={set("email")} className={fieldErrors.email ? "border-red-500" : ""} />
+                {fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>}
+              </div>
+              <div>
+                <Input placeholder="Phone Number (10 digits) *" type="tel" value={form.phone} onChange={set("phone")} className={fieldErrors.phone ? "border-red-500" : ""} />
+                {fieldErrors.phone && <p className="text-red-500 text-xs mt-1">{fieldErrors.phone}</p>}
+              </div>
               <Input placeholder="City / District" value={form.city} onChange={set("city")} />
               <select className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={form.interest} onChange={set("interest")}>
                 <option value="">Area of Interest</option>
