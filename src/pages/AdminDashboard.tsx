@@ -21,6 +21,9 @@ const AdminDashboard = () => {
   const [volunteers, setVolunteers] = useState<any[]>([]);
   const [ngos, setNgos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNgoForm, setShowNgoForm] = useState(false);
+  const [ngoForm, setNgoForm] = useState({ name: "", email: "", password: "", contactPerson: "", phone: "", city: "", regNo: "" });
+  const [creatingNgo, setCreatingNgo] = useState(false);
 
   useEffect(() => {
     if (role === "ngo") navigate("/ngo", { replace: true });
