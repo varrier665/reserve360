@@ -3,11 +3,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { LogOut, CheckCircle, XCircle, Users, Heart, Building2, DollarSign } from "lucide-react";
+import { LogOut, CheckCircle, XCircle, Users, Heart, Building2, DollarSign, Plus } from "lucide-react";
+import { validateEmail, validatePhone } from "@/lib/validation";
 
 type Tab = "donations" | "transactions" | "volunteers" | "ngos";
 
