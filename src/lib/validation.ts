@@ -45,8 +45,9 @@ export const validateVolunteerForm = (form: any): ValidationError[] => {
   const errors: ValidationError[] = [];
   if (!validateRequired(form.firstName || "")) errors.push({ field: "firstName", message: "First name is required" });
   if (!validateRequired(form.email || "")) errors.push({ field: "email", message: "Email is required" });
-  else if (!validateEmail(form.email)) errors.push({ field: "email", message: "Invalid email format" });
-  if (form.phone && !validatePhone(form.phone)) errors.push({ field: "phone", message: "Phone must be 10 digits" });
+  else if (!validateEmail(form.email)) errors.push({ field: "email", message: "Please enter a valid email address" });
+  if (!validateRequired(form.phone || "")) errors.push({ field: "phone", message: "Phone number is required" });
+  else if (!validatePhone(form.phone)) errors.push({ field: "phone", message: "Phone must be exactly 10 digits" });
   return errors;
 };
 
