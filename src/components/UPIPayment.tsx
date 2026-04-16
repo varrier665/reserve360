@@ -19,7 +19,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
   const [transactionId, setTransactionId] = useState("");
   const [step, setStep] = useState<"pay" | "confirm" | "done">("pay");
 
-  const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=Reserve360&am=${amount}&cu=INR`;
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=Reserve360&am=${amount}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
 
   const copyUpiId = () => {
@@ -68,6 +68,13 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
                   <Copy className="h-4 w-4" />
                 </button>
               </div>
+
+              <a
+                href={upiLink}
+                className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+              >
+                <Smartphone className="h-4 w-4" /> Open in UPI App <ExternalLink className="h-3 w-3" />
+              </a>
 
               <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
                 I've Made the Payment
