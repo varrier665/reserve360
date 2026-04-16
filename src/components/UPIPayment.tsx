@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { QrCode, CheckCircle2 } from "lucide-react";
+import { QrCode, Smartphone, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-const UPI_ID = "seeman5354@oksbi";
+const UPI_ID = "seeman5354@oksbi"; 
 
 interface UPIPaymentProps {
   amount: number;
@@ -19,8 +19,13 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
   const [transactionId, setTransactionId] = useState("");
   const [step, setStep] = useState<"pay" | "confirm" | "done">("pay");
 
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=Reserve360&am=${amount}&cu=INR&tn=Donation-${donationId.slice(0, 8)}`;
+  const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=Reserve360&am=${amount}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+
+  const copyUpiId = () => {
+    navigator.clipboard.writeText(UPI_ID);
+    toast({ title: "UPI ID copied!", description: UPI_ID });
+  };
 
   const handleConfirm = () => {
     if (!transactionId.trim()) {
@@ -51,15 +56,18 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
                 <QrCode className="h-4 w-4" /> UPI Payment
               </div>
               <h3 className="font-display text-2xl font-bold text-foreground">₹{amount.toLocaleString("en-IN")}</h3>
-              <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app</p>
+              <p className="text-sm text-muted-foreground">Scan QR or use UPI ID to pay</p>
 
-              <div className="bg-white rounded-xl p-4 inline-block">
-                <img src={qrUrl} alt="UPI QR Code" className="w-64 h-64 mx-auto" />
+              <div className="bg-background rounded-xl p-4 inline-block">
+                <img src={qrUrl} alt="UPI QR Code" className="w-48 h-48 mx-auto" />
               </div>
 
-              <p className="text-xs text-muted-foreground px-4">
-                📱 On mobile? Long-press the QR to save it, then open GPay/PhonePe → Scan → Choose from gallery
-              </p>
+              <div className="flex items-center justify-center gap-2 bg-muted rounded-lg px-4 py-2">
+                <span className="text-sm font-medium text-foreground">{UPI_ID}</span>
+                <button onClick={copyUpiId} className="text-primary hover:text-primary/80">
+                  <Copy className="h-4 w-4" />
+                </button>
+              </div>
 
               <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
                 I've Made the Payment
