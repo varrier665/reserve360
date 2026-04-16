@@ -69,12 +69,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
                 </button>
               </div>
 
-              <a
-                href={upiLink}
-                className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
-              >
-                <Smartphone className="h-4 w-4" /> Open in App <ExternalLink className="h-3 w-3" />
-              </a> 
+              
 
               <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
                 I've Made the Payment
