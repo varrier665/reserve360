@@ -63,7 +63,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
               </div>
 
               <div className="flex items-center justify-center gap-2 bg-muted rounded-lg px-4 py-2">
-                <span className="text-sm font-medium text-foreground">{UPI_ID}</span>
+                <span className="text-sm font-medium text-foreground"></span>
                 <button onClick={copyUpiId} className="text-primary hover:text-primary/80">
                   <Copy className="h-4 w-4" />
                 </button>
