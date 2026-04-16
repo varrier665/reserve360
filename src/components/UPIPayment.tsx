@@ -19,7 +19,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
   const [transactionId, setTransactionId] = useState("");
   const [step, setStep] = useState<"pay" | "confirm" | "done">("pay");
 
-  const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=Reserve360&am=${amount}&cu=INR`;
+  // const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=Reserve360&am=${amount}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
 
   const copyUpiId = () => {
@@ -42,7 +42,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 backdrop-blur-sm p-4"
     >
-      <motion.div
+      {/* <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="bg-card rounded-2xl shadow-xl max-w-md w-full p-6 relative"
@@ -69,17 +69,38 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
                 </button>
               </div>
 
-              {/* <a
+               <a
                 href={upiLink}
                 className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
               >
                 <Smartphone className="h-4 w-4" /> Open in UPI App <ExternalLink className="h-3 w-3" />
-              </a> */}
+              </a> 
 
               <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
                 I've Made the Payment
               </Button>
-            </motion.div>
+            </motion.div> */}
+      {step === "pay" && (
+  <motion.div key="pay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-4">
+    <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-1.5 rounded-full text-sm font-medium">
+      <QrCode className="h-4 w-4" /> UPI Payment
+    </div>
+    <h3 className="font-display text-2xl font-bold text-foreground">₹{amount.toLocaleString("en-IN")}</h3>
+    <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app</p>
+
+    <div className="bg-white rounded-xl p-4 inline-block">
+      <img src={qrUrl} alt="UPI QR Code" className="w-64 h-64 mx-auto" />
+    </div>
+
+    <p className="text-xs text-muted-foreground px-4">
+      📱 On mobile? Long-press the QR to save it, then open GPay/PhonePe → Scan → Choose from gallery
+    </p>
+
+    <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
+      I've Made the Payment
+    </Button>
+  </motion.div>
+)}
           )}
 
           {step === "confirm" && (
