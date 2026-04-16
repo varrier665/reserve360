@@ -81,7 +81,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
               </Button>
             </motion.div>
          
-          )
+          )}
           {step === "confirm" && (
             <motion.div key="confirm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <h3 className="font-display text-xl font-bold text-foreground">Confirm Payment</h3>
