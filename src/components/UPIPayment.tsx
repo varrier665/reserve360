@@ -62,12 +62,12 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
                 <img src={qrUrl} alt="UPI QR Code" className="w-48 h-48 mx-auto" />
               </div>
 
-              {/*<div className="flex items-center justify-center gap-2 bg-muted rounded-lg px-4 py-2">
-                <span className="text-sm font-medium text-foreground"></span>
+              <div className="flex items-center justify-center gap-2 bg-muted rounded-lg px-4 py-2">
+                <span className="text-sm font-medium text-foreground">{UPI_ID}</span>
                 <button onClick={copyUpiId} className="text-primary hover:text-primary/80">
                   <Copy className="h-4 w-4" />
                 </button>
-              </div>*/}
+              </div>
 
               <a
                 href={upiLink}
