@@ -19,7 +19,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
   const [transactionId, setTransactionId] = useState("");
   const [step, setStep] = useState<"pay" | "confirm" | "done">("pay");
 
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=Reserve360&am=${amount}&cu=INR&tn=Donation-${donationId.slice(0, 8)}`;
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=Reserve360&am=${amount}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
 
   const copyUpiId = () => {
