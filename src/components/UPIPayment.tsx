@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { QrCode, Smartphone, CheckCircle2, Copy, ExternalLink } from "lucide-react";
+import { QrCode, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-const UPI_ID = "seeman5354@oksbi"; 
+const UPI_ID = "seeman5354@oksbi";
 
 interface UPIPaymentProps {
   amount: number;
@@ -19,12 +19,8 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
   const [transactionId, setTransactionId] = useState("");
   const [step, setStep] = useState<"pay" | "confirm" | "done">("pay");
 
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=Reserve360&am=${amount}&cu=INR&tn=Donation-${donationId.slice(0, 8)}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
-
-  const copyUpiId = () => {
-    navigator.clipboard.writeText(UPI_ID);
-    toast({ title: "UPI ID copied!", description: UPI_ID });
-  };
 
   const handleConfirm = () => {
     if (!transactionId.trim()) {
@@ -41,29 +37,34 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 backdrop-blur-sm p-4"
     >
-      
-      {step === "pay" && (
-  <motion.div key="pay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-4">
-    <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-1.5 rounded-full text-sm font-medium">
-      <QrCode className="h-4 w-4" /> UPI Payment
-    </div>
-    <h3 className="font-display text-2xl font-bold text-foreground">₹{amount.toLocaleString("en-IN")}</h3>
-    <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app</p>
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-card rounded-2xl shadow-xl max-w-md w-full p-6 relative"
+      >
+        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-xl">×</button>
 
-    <div className="bg-white rounded-xl p-4 inline-block">
-      <img src={qrUrl} alt="UPI QR Code" className="w-64 h-64 mx-auto" />
-    </div>
+        <AnimatePresence mode="wait">
+          {step === "pay" && (
+            <motion.div key="pay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-4">
+              <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-1.5 rounded-full text-sm font-medium">
+                <QrCode className="h-4 w-4" /> UPI Payment
+              </div>
+              <h3 className="font-display text-2xl font-bold text-foreground">₹{amount.toLocaleString("en-IN")}</h3>
+              <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app</p>
 
-    <p className="text-xs text-muted-foreground px-4">
-      📱 On mobile? Long-press the QR to save it, then open GPay/PhonePe → Scan → Choose from gallery
-    </p>
+              <div className="bg-white rounded-xl p-4 inline-block">
+                <img src={qrUrl} alt="UPI QR Code" className="w-64 h-64 mx-auto" />
+              </div>
 
-    <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
-      I've Made the Payment
-    </Button>
-    
-  </motion.div>
-)}
+              <p className="text-xs text-muted-foreground px-4">
+                📱 On mobile? Long-press the QR to save it, then open GPay/PhonePe → Scan → Choose from gallery
+              </p>
+
+              <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
+                I've Made the Payment
+              </Button>
+            </motion.div>
           )}
 
           {step === "confirm" && (
