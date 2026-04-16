@@ -19,7 +19,6 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
   const [transactionId, setTransactionId] = useState("");
   const [step, setStep] = useState<"pay" | "confirm" | "done">("pay");
 
-  // const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=Reserve360&am=${amount}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
 
   const copyUpiId = () => {
@@ -42,44 +41,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
       animate={{ opacity: 1 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 backdrop-blur-sm p-4"
     >
-      {/* <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="bg-card rounded-2xl shadow-xl max-w-md w-full p-6 relative"
-      >
-        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-xl">×</button>
-
-        <AnimatePresence mode="wait">
-          {step === "pay" && (
-            <motion.div key="pay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-1.5 rounded-full text-sm font-medium">
-                <QrCode className="h-4 w-4" /> UPI Payment
-              </div>
-              <h3 className="font-display text-2xl font-bold text-foreground">₹{amount.toLocaleString("en-IN")}</h3>
-              <p className="text-sm text-muted-foreground">Scan QR or use UPI ID to pay</p>
-
-              <div className="bg-background rounded-xl p-4 inline-block">
-                <img src={qrUrl} alt="UPI QR Code" className="w-48 h-48 mx-auto" />
-              </div>
-
-              <div className="flex items-center justify-center gap-2 bg-muted rounded-lg px-4 py-2">
-                <span className="text-sm font-medium text-foreground">{UPI_ID}</span>
-                <button onClick={copyUpiId} className="text-primary hover:text-primary/80">
-                  <Copy className="h-4 w-4" />
-                </button>
-              </div>
-
-               <a
-                href={upiLink}
-                className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
-              >
-                <Smartphone className="h-4 w-4" /> Open in UPI App <ExternalLink className="h-3 w-3" />
-              </a> 
-
-              <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
-                I've Made the Payment
-              </Button>
-            </motion.div> */}
+      
       {step === "pay" && (
   <motion.div key="pay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-4">
     <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-1.5 rounded-full text-sm font-medium">
@@ -99,6 +61,7 @@ const UPIPayment = ({ amount, donationId, donorName, onPaymentConfirmed, onClose
     <Button variant="warm" className="w-full" onClick={() => setStep("confirm")}>
       I've Made the Payment
     </Button>
+    
   </motion.div>
 )}
           )}
