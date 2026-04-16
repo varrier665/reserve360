@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { QrCode, Smartphone, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-const UPI_ID = "iamstisha@oksbi"; 
+const UPI_ID = "seeman5354@oksbi"; 
 
 interface UPIPaymentProps {
   amount: number;
